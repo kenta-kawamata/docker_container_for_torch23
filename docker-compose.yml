@@ -1,0 +1,32 @@
+version: '3'
+services:
+  tensorflow-docker-enviroment:
+    image: 220529-tensorflow
+    container_name: "220529-tensorflow"
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile
+    environment:
+      - DISPLAY=0.0
+      - WAYLAND_DISPLAY=$WAYLAND_DISPLAY
+      - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+      - PULSE_SERVER=$PULSE_SERVER
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib
+    restart: always
+    tty: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+      - /usr/lib/wsl:/usr/lib/wsl
+      - /mnt/f:/mnt
+      - ../:/home/user/code
+    devices:
+      - /dev/dxg:/dev/dxg
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    ports:
+      - "8888:8888"
+
