@@ -1,7 +1,7 @@
 services:
-  pytorch-230-cuda118:
-    image: pytorch-230-cuda118-img
-    container_name: "pytorch-230-cuda118-ctn"
+  pytorch230-cuda118:
+    image: pytorch230-cuda118-img
+    container_name: "pytorch230-cuda118-ctn"
     build: 
       context: ./
       dockerfile: ./Dockerfile
