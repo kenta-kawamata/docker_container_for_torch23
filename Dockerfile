@@ -118,11 +118,12 @@ RUN apt autoremove -y
 # https://qiita.com/Zombie_PG/items/62f4b792ac541c04ee40
 ######################################################################
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
 
-RUN python3 -m pip --no-cache-dir install --upgrade \
-    "pip<20.3" \
-    setuptools
+#RUN python3 -m pip --no-cache-dir install --upgrade \
+#    "pip<20.3" \
+#    setuptools
 
 ######################################################################
 # end setup pip
@@ -138,7 +139,7 @@ RUN python3 -m pip --no-cache-dir install --upgrade \
 #ARG TF_PACKAGE=tensorflow
 #ARG TF_PACKAGE_VERSION=
 
-#RUN python3 -m pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 #COPY bashrc /etc/bash.bashrc
 RUN chmod a+rwx /etc/bash.bashrc
@@ -161,6 +162,7 @@ EXPOSE 8888
 # https://stackoverflow.com/questions/66497147/cant-run-opengl-on-wsl2#:~:text=To%20solve%20this%2C%20do%20the%20following%3A%20In%20the,your%20bashrc%2Fzshrc%20file%20if%20you%20have%20added%20it.
 ######################################################################
 
-RUN echo 'export DISPLAY=:0.0' >> ~/.bashrc \
-    echo 'export LIBGL_ALWAYS_INDIRECT=0' >> ~/.bashrc
+RUN echo 'export DISPLAY=:0.0' >> ~/.bashrc 
+RUN echo 'export LIBGL_ALWAYS_INDIRECT=0' >> ~/.bashrc
+RUN source ~/.bashrc
 
