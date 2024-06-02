@@ -1,6 +1,5 @@
 ARG UBUNTU_VERSION=20.04
 
-ARG ARCH=
 ARG CUDA=11.8
 # https://qiita.com/yutake27/items/3a3a44ea8185887eff1c
 # https://hub.docker.com/r/nvidia/cuda/tags?page=&page_size=&ordering=&name=11.8%20
@@ -51,56 +50,21 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
         eog \
         libgl1-mesa-dev
 
-
-
-# Link the libcuda stub to the location where tensorflow is searching for it and reconfigure
-# dynamic linker run-time bindings
-#RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 \
-#    && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
-#    && ldconfig
+RUN apt update && apt install -y --no-install-recommends wget git cmake
 
 # See http://bugs.python.org/issue19846
 ENV LANG C.UTF-8
 
-######################################################################
+#######################################################################################################################################
 # start install python
 # https://notes.nakurei.com/post/build-python3-environment-with-docker-ubuntu/
-######################################################################
 
-ARG python_version="3.12.3"
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt update
+RUN apt install -y python3.8
+RUN apt install -y python3.8-dbg python3.8-dev python3.8-distutils \
+                   python3.8-lib2to3 python3.8-tk
 
-# Set locale
-RUN apt update -y \
-    && apt install -y --no-install-recommends \
-    language-pack-en
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-RUN ln -snf /usr/share/zoneinfo/America/New_York /etc/localtime
-RUN apt update -y \
-    && apt install -y --no-install-recommends \
-    tzdata
-
-# Install packages
-# Ref: https://github.com/pyenv/pyenv/wiki#suggested-build-environment
-RUN apt update -y \
-    && apt install -y --no-install-recommends \
-    git \
-    wget \
-    xz-utils \
-    build-essential libssl-dev zlib1g-dev \
-    libbz2-dev libreadline-dev libsqlite3-dev curl \
-    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
-    libgdbm-dev libdb-dev uuid-dev
-
-# Install Python
-RUN cd /usr/local/src \
-    && wget --no-check-certificate https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tar.xz \
-    && tar -Jxvf Python-${python_version}.tar.xz \
-    && cd Python-${python_version} \
-    && ./configure --with-ensurepip \
-    && make \
-    && make install
 
 # Set alias
 RUN echo 'alias python=python3' >> ~/.bashrc
@@ -109,58 +73,34 @@ RUN . ~/.bashrc
 
 RUN apt autoremove -y
 
-######################################################################
 # end install python
-######################################################################
+#######################################################################################################################################
 
-######################################################################
+#######################################################################################################################################
 # setup pip
 # https://qiita.com/Zombie_PG/items/62f4b792ac541c04ee40
-######################################################################
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.8 get-pip.py
+RUN python3.8 -m pip install --upgrade pip
 
-#RUN python3 -m pip --no-cache-dir install --upgrade \
-#    "pip<20.3" \
-#    setuptools
-
-######################################################################
 # end setup pip
-######################################################################
-
-# Options:
-#   tensorflow
-#   tensorflow-gpu
-#   tf-nightly
-#   tf-nightly-gpu
-# Set --build-arg TF_PACKAGE_VERSION=1.11.0rc0 to install a specific version.
-# Installs the latest version by default.
-#ARG TF_PACKAGE=tensorflow
-#ARG TF_PACKAGE_VERSION=
+#######################################################################################################################################
 
 RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install onnx==1.8.1
 
 #COPY bashrc /etc/bash.bashrc
 RUN chmod a+rwx /etc/bash.bashrc
 
-#RUN python3 -m pip install --no-cache-dir matplotlib
-# Pin ipykernel and nbformat; see https://github.com/ipython/ipykernel/issues/422
-# Pin jedi; see https://github.com/ipython/ipython/issues/12740
-#RUN python3 -m pip install --no-cache-dir jupyter_http_over_ws ipykernel==5.1.1 nbformat==4.4.0 jedi==0.17.2
-#RUN jupyter serverextension enable --py jupyter_http_over_ws
-
-#RUN mkdir -p /tf/tensorflow-tutorials && chmod -R a+rwx /tf/
-#RUN mkdir /.local && chmod a+rwx /.local
-RUN apt update && apt install -y --no-install-recommends wget git
-RUN apt autoremove -y && apt remove -y wget
+RUN apt autoremove -y 
 EXPOSE 8888
 
 
-######################################################################
+#######################################################################################################################################
 # set X windows and GL to bashrc
-# https://stackoverflow.com/questions/66497147/cant-run-opengl-on-wsl2#:~:text=To%20solve%20this%2C%20do%20the%20following%3A%20In%20the,your%20bashrc%2Fzshrc%20file%20if%20you%20have%20added%20it.
-######################################################################
+# https://stackoverflow.com/questions/66497147/cant-run-opengl-on-wsl2#:~ \ 
+# :text=To%20solve%20this%2C%20do%20the%20following%3A%20In%20the,your%20bashrc%2Fzshrc%20file%20if%20you%20have%20added%20it.
 
 RUN echo 'export DISPLAY=:0.0' >> ~/.bashrc 
 RUN echo 'export LIBGL_ALWAYS_INDIRECT=0' >> ~/.bashrc
