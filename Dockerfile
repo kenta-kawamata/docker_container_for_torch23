@@ -116,5 +116,6 @@ RUN pip install -v -e .
 
 RUN echo 'export DISPLAY=:0.0' >> ~/.bashrc 
 RUN echo 'export LIBGL_ALWAYS_INDIRECT=0' >> ~/.bashrc
+RUN echo 'export PYTHONPATH="${PYTHONPATH}:/programs/YOLOX/"' >> ~/.bashrc
 RUN source ~/.bashrc
 
