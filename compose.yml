@@ -27,5 +27,5 @@ services:
           devices:
             - capabilities: [gpu]
     ports:
-      - "8888:8888"
+      - "7777:7777"
 
